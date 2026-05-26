@@ -6,6 +6,7 @@ Simulates one day of operations — assigns packages to agents, calculates dista
 ---
 
 ## Project Structure
+
 ```
 delivery_system/
 ├── delivery_system.py       # Main simulator
@@ -18,6 +19,7 @@ delivery_system/
 │   └── ... test_case_10.json
 └── test_outputs/            # Reports for all test cases (after running)
 ```
+
 ---
 
 ## Requirements
@@ -30,23 +32,28 @@ delivery_system/
 ## How to Run
 
 ### Basic run (base case)
-
+```
 python delivery_system.py data.json
-
+```
 
 ### Run a specific test case
-
+```
 python delivery_system.py test_cases/test_case_1.json
-
+```
 
 ### Run all test cases at once
-
+```
 python run_tests.py
+```
+
+---
 
 ### All bonuses together
-
+```
 python delivery_system.py data.json --visualise --delays --new-agent "A4,10,20" --csv top.csv
+```
 
+---
 
 ## Output Report Format
 
