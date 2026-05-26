@@ -6,7 +6,7 @@ Simulates one day of operations — assigns packages to agents, calculates dista
 ---
 
 ## Project Structure
-
+```
 delivery_system/
 ├── delivery_system.py       # Main simulator
 ├── run_tests.py             # Batch test runner
@@ -17,7 +17,7 @@ delivery_system/
 │   ├── test_case_2.json
 │   └── ... test_case_10.json
 └── test_outputs/            # Reports for all test cases (after running)
-
+```
 ---
 
 ## Requirements
