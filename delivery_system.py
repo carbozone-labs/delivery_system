@@ -9,16 +9,28 @@ def calculate_distance(a1, a2):
     return math.sqrt((a1[0] - a2[0]) ** 2 + (a1[1] - a2[1]) ** 2)
 
 def load_data(filepath):
-    # Read and parse the JSON file - handles standard schema
     with open(filepath, "r", encoding="utf-8") as fh:
         raw = json.load(fh)
 
-    warehouses = raw.get("warehouses", {})
-    agents = raw.get("agents", {})
+    # Convert warehouse list -> dictionary
+    warehouses = {
+        w["id"]: w["location"]
+        for w in raw.get("warehouses", [])
+    }
+
+    # Convert agent list -> dictionary
+    agents = {
+        a["id"]: a["location"]
+        for a in raw.get("agents", [])
+    }
+
     packages = raw.get("packages", [])
 
-    return {"warehouses": warehouses, "agents": agents, "packages": packages}
-
+    return {
+        "warehouses": warehouses,
+        "agents": agents,
+        "packages": packages
+    }
 def assign_simulate(warehouses, agents, packages):
    
     agent_pos = deepcopy(agents)
@@ -29,7 +41,7 @@ def assign_simulate(warehouses, agents, packages):
     }
 
     for pkg in packages:
-        wh_loc = warehouses[pkg["warehouse"]]
+        wh_loc = warehouses[pkg["warehouse_id"]]
         dest = pkg["destination"]
 
         # Find nearest agent (from their CURRENT position - not starting position)
