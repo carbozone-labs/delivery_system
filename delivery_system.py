@@ -6,40 +6,41 @@ from copy import deepcopy
 
 def calculate_distance(a1, a2):
     # Calculate straight-line distance between two 2D points
-
     return math.sqrt((a1[0] - a2[0]) ** 2 + (a1[1] - a2[1]) ** 2)
 
 def load_data(filepath):
+  
     with open(filepath, "r", encoding="utf-8") as fh:
         raw = json.load(fh)
 
-    warehouses = {
-        w["id"]: w["location"]
-        for w in raw.get("warehouses", [])
-    }
+    # Normalise warehouses
+    raw_wh = raw.get("warehouses", {})
+    if isinstance(raw_wh, list):
+        warehouses = {w["id"]: w["location"] for w in raw_wh}
+    else:
+        warehouses = dict(raw_wh)
 
-    agents = {
-        a["id"]: a["location"]
-        for a in raw.get("agents", [])
-    }
+    # Normalise agents
+    raw_ag = raw.get("agents", {})
+    if isinstance(raw_ag, list):
+        agents = {a["id"]: a["location"] for a in raw_ag}
+    else:
+        agents = dict(raw_ag)
 
-    packages = [
-        {
-            "id": p["id"],
-            "warehouse": p["warehouse_id"],
-            "destination": p["destination"]
-        }
-        for p in raw.get("packages", [])
-    ]
+    # Normalise packages - handle both "warehouse" and "warehouse_id" keys
+    packages = []
+    for pkg in raw.get("packages", []):
+        wh_key = pkg.get("warehouse") or pkg.get("warehouse_id")
+        packages.append({
+            "id": pkg["id"],
+            "warehouse": wh_key,
+            "destination": pkg["destination"],
+        })
 
-    return {
-        "warehouses": warehouses,
-        "agents": agents,
-        "packages": packages
-    }
+    return {"warehouses": warehouses, "agents": agents, "packages": packages}
 
 def assign_simulate(warehouses, agents, packages):
-
+  
     agent_pos = deepcopy(agents)
 
     stats = {
@@ -69,7 +70,6 @@ def assign_simulate(warehouses, agents, packages):
     return stats
 
 def compute_efficiency(stats):
-   
     for s in stats.values():
         if s["packages_delivered"] > 0:
             s["efficiency"] = round(s["total_distance"] / s["packages_delivered"], 2)
@@ -78,14 +78,12 @@ def compute_efficiency(stats):
     return stats
 
 def find_best_agent(stats):
-    
     eligible = {aid: s for aid, s in stats.items() if s["efficiency"] is not None}
     if not eligible:
         return None
     return min(eligible.keys(), key=lambda aid: (eligible[aid]["efficiency"], aid))
 
 def build_report(stats, best_agent):
-    
     report = {}
     for aid, s in stats.items():
         report[aid] = {
@@ -97,7 +95,6 @@ def build_report(stats, best_agent):
     return report
 
 def save_report(report, output_path):
-   
     with open(output_path, "w", encoding="utf-8") as fh:
         json.dump(report, fh, indent=2)
     print(f"[✓] Report saved -> {output_path}")
@@ -111,6 +108,9 @@ def main():
         sys.exit(1)
 
     data = load_data(filepath)
+    print(f"[i] Loaded {len(data['warehouses'])} warehouses, "
+          f"{len(data['agents'])} agents, {len(data['packages'])} packages.")
+
     stats = assign_simulate(data["warehouses"], data["agents"], data["packages"])
     stats = compute_efficiency(stats)
     best = find_best_agent(stats)
